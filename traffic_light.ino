@@ -1,0 +1,65 @@
+#include <LedControl.h>
+
+LedControl lc = LedControl(4, 3, 2, 1); // DIN=D4, CLK=D3, CS=D2
+
+int red    = 5;
+int yellow = 6;
+int green  = 7;
+
+void setup() {
+  pinMode(red, OUTPUT);
+  pinMode(yellow, OUTPUT);
+  pinMode(green, OUTPUT);
+
+  lc.shutdown(0, false);
+  lc.setIntensity(0, 8);
+  lc.clearDisplay(0);
+}
+
+void allOff() {
+  digitalWrite(red, LOW);
+  digitalWrite(yellow, LOW);
+  digitalWrite(green, LOW);
+}
+
+void showNumber(int num) {
+  lc.clearDisplay(0);
+
+  // Correct 8x8 font: top-to-bottom, MSB = leftmost column
+  byte digits[10][8] = {
+    {0x3C,0x66,0x66,0x66,0x66,0x66,0x3C,0x00}, // 0
+    {0x18,0x1C,0x18,0x18,0x18,0x18,0x7E,0x00}, // 1
+    {0x3C,0x66,0x60,0x30,0x18,0x0C,0x7E,0x00}, // 2
+    {0x3C,0x66,0x60,0x38,0x60,0x66,0x3C,0x00}, // 3
+    {0x30,0x38,0x3C,0x36,0x7E,0x30,0x30,0x00}, // 4
+    {0x7E,0x06,0x3E,0x60,0x60,0x66,0x3C,0x00}, // 5
+    {0x3C,0x06,0x3E,0x66,0x66,0x66,0x3C,0x00}, // 6
+    {0x7E,0x60,0x30,0x18,0x0C,0x0C,0x0C,0x00}, // 7
+    {0x3C,0x66,0x66,0x3C,0x66,0x66,0x3C,0x00}, // 8
+    {0x3C,0x66,0x66,0x7C,0x60,0x66,0x3C,0x00}, // 9
+  };
+
+  if (num >= 0 && num <= 9) {
+    for (int row = 0; row < 8; row++) {
+      // Reverse row order to fix vertical flip
+      lc.setRow(0, row, digits[num][7 - row]);
+    }
+  }
+}
+void countDown(int led, int seconds) {
+  allOff();
+  digitalWrite(led, HIGH);
+  for (int i = seconds; i > 0; i--) {
+    showNumber(i);
+    delay(1000);
+  }
+}
+
+void loop() {
+  countDown(yellow, 3);  // YELLOW 1 second
+  countDown(red,    7);  // RED 5 seconds
+  countDown(yellow, 3);  // YELLOW 1 second
+  countDown(green,  5);  // GREEN 3 seconds
+
+}
+
